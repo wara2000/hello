@@ -80,4 +80,11 @@ public class UserService {
                 user.getName(),
                 user.getEmail());
     }
+
+    public List<UserResponse> searchByName(String name) {
+        return userRepository.findByNameContaining(name)
+        .stream()
+        .map(this::toResponse)
+        .toList();
+    }
 }

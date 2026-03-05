@@ -1,5 +1,7 @@
 package com.ryota.hello;
 
+import java.util.List;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -64,5 +66,10 @@ return ApiResponse.success(userService.findAll(pageable));
     public ApiResponse<UserResponse> findById(@PathVariable Long id) {
         return ApiResponse.success(userService.findByIdResponse(id));
     }
-    
+
+    @GetMapping("/search")
+    public ApiResponse<List<UserResponse>> search(
+        @RequestParam String name) {
+        return ApiResponse.success(userService.searchByName(name));
+    }
 }
