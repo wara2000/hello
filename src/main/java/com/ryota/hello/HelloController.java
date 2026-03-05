@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import com.ryota.hello.service.UserService;
 import com.ryota.hello.dto.UserCreateRequest;
@@ -27,10 +28,17 @@ public class HelloController {
     @GetMapping
     public ApiResponse<Page<UserResponse>> findAll(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size){
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "id") String sortBy,
+        @RequestParam(defaultValue = "asc") String direction){
 
-    Pageable pageable = PageRequest.of(page, size);
-    return ApiResponse.success(userService.findAll(pageable));
+            Sort sort = direction.equalsIgnoreCase("desc")
+            ? Sort.by(sortBy).descending()
+            : Sort.by(sortBy).ascending();
+    
+Pageable pageable = PageRequest.of(page, size, sort);
+
+return ApiResponse.success(userService.findAll(pageable));
     }
     
     @PostMapping
