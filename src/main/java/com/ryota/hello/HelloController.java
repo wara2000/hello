@@ -10,11 +10,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
-
-import com.ryota.hello.dto.UserResponse;
-import com.ryota.hello.entity.User;
 import com.ryota.hello.service.UserService;
+import com.ryota.hello.dto.UserCreateRequest;
+import com.ryota.hello.dto.UserResponse;
+import com.ryota.hello.dto.UserUpdateRequest;
+import com.ryota.hello.api.ApiResponse;
+
 
 @RestController
 @RequestMapping("/users")
@@ -29,35 +33,30 @@ public class HelloController {
 
     @GetMapping
     public List<UserResponse> findAll() {
-        return userService.findAll()
-            .stream()
-            .map(user -> new UserResponse(
-                    user.getId(),
-                    user.getName(),
-                    user.getEmail()))
-            .toList();
-}
-    @PostMapping("/users")
-    public User createUser(@RequestBody User user) {
-        return userService.save(user);
+        return userService.findAll();
     }
-    @PutMapping("/users/{id}")
-public User updateUser(
+
+    @PostMapping
+    public ApiResponse<UserResponse> createUser(
+        @Valid @RequestBody UserCreateRequest request) {
+        return ApiResponse.success(userService.create(request));
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<UserResponse> updateUser(
         @PathVariable Long id,
-        @RequestBody User user) {
-    return userService.update(id, user);
-        }
-         @DeleteMapping("/users/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.delete(id);
+        @Valid @RequestBody UserUpdateRequest request) {
+        return ApiResponse.success(userService.update(id, request));
     }
-    @GetMapping("/users/{id}")
-public UserResponse findById(@PathVariable Long id) {
 
-    User user = userService.findById(id);
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        userService.delete(id);
+        return ApiResponse.success(null);
+    }
 
-    return new UserResponse(user.getId(), user.getName(), user.getEmail());
-}
-
-
+    @GetMapping("/{id}")
+    public ApiResponse<UserResponse> findById(@PathVariable Long id) {
+        return ApiResponse.success(userService.findByIdResponse(id));
+    }
 }

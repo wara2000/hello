@@ -3,10 +3,14 @@ package com.ryota.hello.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ryota.hello.entity.User;
 import com.ryota.hello.repository.UserRepository;
 import com.ryota.hello.exception.ResourceNotFoundException;
+import com.ryota.hello.dto.UserCreateRequest;
+import com.ryota.hello.dto.UserResponse;
+import com.ryota.hello.dto.UserUpdateRequest;
 
 
 @Service
@@ -18,30 +22,62 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
-        
+    @Transactional(readOnly = true)
+    public List<UserResponse> findAll() {
+        return userRepository.findAll()
+            .stream()
+            .map(this::toResponse)
+            .toList();
     }
-    public User save(User user) {
-    return userRepository.save(user);
+     // 作成
+     @Transactional
+    public UserResponse create(UserCreateRequest request) {
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+
+        User saved = userRepository.save(user);
+
+        return toResponse(saved);
     }
-    public User update(Long id, User user) {
+
+    // 更新
+    @Transactional
+    public UserResponse update(Long id, UserUpdateRequest request) {
         User existing = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found with id: " + id));
 
-        existing.setName(user.getName());
-        existing.setEmail(user.getEmail());
-
-        return userRepository.save(existing);
-    }
-     public void delete(Long id) {
-        userRepository.deleteById(id);
+        existing.setName(request.getName());
+        existing.setEmail(request.getEmail());
+        return toResponse(existing);
     }
 
-    public User findById(Long id) {
-    return userRepository.findById(id)
-            .orElseThrow(() ->
-                    new ResourceNotFoundException("User not found with id: " + id));
-                    
+    // 削除
+    @Transactional
+    public void delete(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found with id: " + id));
+
+        userRepository.delete(user);
+    }
+
+    // 1件取得（Response用）
+    @Transactional(readOnly = true)
+    public UserResponse findByIdResponse(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found with id: " + id));
+
+        return toResponse(user);
+    }
+
+    // Entity → Response変換
+    private UserResponse toResponse(User user) {
+        return new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail());
     }
 }
