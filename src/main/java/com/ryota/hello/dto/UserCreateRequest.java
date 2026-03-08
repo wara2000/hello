@@ -14,6 +14,19 @@ public class UserCreateRequest {
     @Email(message = "正しいメール形式で入力してください")
     private String email;
 
-    public String getName() { return name; }
-    public String getEmail() { return email; }
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }
